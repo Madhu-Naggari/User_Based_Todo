@@ -1,0 +1,421 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Role-Based Task API",
+    "version": "1.0.0",
+    "description": "Swagger documentation for the Next.js backend assignment covering authentication, RBAC, task CRUD, and admin access."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Use the JWT returned by the login or registration response as: Bearer <token>"
+      }
+    },
+    "schemas": {
+      "AuthUser": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "cmnachmtk0000sfm7tt4o6jdg" },
+          "name": { "type": "string", "example": "Platform Admin" },
+          "email": { "type": "string", "format": "email", "example": "admin@primetrade.local" },
+          "role": { "type": "string", "example": "ADMIN" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "required": ["name", "email", "password"],
+        "properties": {
+          "name": { "type": "string", "example": "Demo User" },
+          "email": { "type": "string", "format": "email", "example": "demo.user@example.com" },
+          "password": { "type": "string", "example": "Secret@123" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email", "example": "admin@primetrade.local" },
+          "password": { "type": "string", "example": "Admin@123" }
+        }
+      },
+      "TaskRequest": {
+        "type": "object",
+        "required": ["title"],
+        "properties": {
+          "title": { "type": "string", "example": "Prepare assignment handoff" },
+          "description": { "type": "string", "example": "Finalize README, docs, and UI polish." },
+          "status": {
+            "type": "string",
+            "enum": ["TODO", "IN_PROGRESS", "DONE"],
+            "example": "IN_PROGRESS"
+          }
+        }
+      },
+      "TaskResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "cmnaclxd70002sf5om3sk8qxx" },
+          "title": { "type": "string", "example": "Prepare assignment handoff" },
+          "description": { "type": "string", "example": "Finalize README, docs, and UI polish." },
+          "status": { "type": "string", "example": "IN_PROGRESS" },
+          "ownerId": { "type": "string", "example": "cmnachmtk0000sfm7tt4o6jdg" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Confirms that the API is reachable.",
+        "responses": {
+          "200": {
+            "description": "Successful health response",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": {
+                    "status": "ok",
+                    "version": "v1",
+                    "timestamp": "2026-03-28T13:10:30.241Z"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "summary": "Register a user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterRequest" },
+              "example": {
+                "name": "Demo User",
+                "email": "demo.user@example.com",
+                "password": "Secret@123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Registration successful.",
+                  "data": {
+                    "user": {
+                      "id": "cmnaclsu20000sf5osys2dlpu",
+                      "name": "Demo User",
+                      "email": "demo.user@example.com",
+                      "role": "USER",
+                      "createdAt": "2026-03-28T13:10:38.138Z"
+                    },
+                    "token": "jwt-token-here"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already exists"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Login a user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" },
+              "example": {
+                "email": "admin@primetrade.local",
+                "password": "Admin@123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Login successful.",
+                  "data": {
+                    "user": {
+                      "id": "cmnachmtk0000sfm7tt4o6jdg",
+                      "name": "Platform Admin",
+                      "email": "admin@primetrade.local",
+                      "role": "ADMIN",
+                      "createdAt": "2026-03-28T13:07:23.720Z"
+                    },
+                    "token": "jwt-token-here"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Logout current user",
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Logout successful.",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Get current authenticated user",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Current user",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": {
+                    "user": {
+                      "id": "cmnachmtk0000sfm7tt4o6jdg",
+                      "name": "Platform Admin",
+                      "email": "admin@primetrade.local",
+                      "role": "ADMIN",
+                      "createdAt": "2026-03-28T13:07:23.720Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid token"
+          }
+        }
+      }
+    },
+    "/api/v1/tasks": {
+      "get": {
+        "summary": "List tasks",
+        "description": "Users receive their own tasks. Admins can pass ?scope=all to inspect every task.",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Task list",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": {
+                    "tasks": [
+                      {
+                        "id": "cmnaclxd70002sf5om3sk8qxx",
+                        "title": "Prepare assignment handoff",
+                        "description": "Finalize README, docs, and UI polish.",
+                        "status": "IN_PROGRESS",
+                        "ownerId": "cmnachmtk0000sfm7tt4o6jdg",
+                        "createdAt": "2026-03-28T13:10:44.011Z",
+                        "updatedAt": "2026-03-28T13:10:44.011Z"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a task",
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TaskRequest" },
+              "example": {
+                "title": "Prepare assignment handoff",
+                "description": "Finalize README, docs, and UI polish.",
+                "status": "IN_PROGRESS"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Task created successfully.",
+                  "data": {
+                    "task": {
+                      "id": "cmnaclxd70002sf5om3sk8qxx",
+                      "title": "Prepare assignment handoff",
+                      "description": "Finalize README, docs, and UI polish.",
+                      "status": "IN_PROGRESS",
+                      "ownerId": "cmnachmtk0000sfm7tt4o6jdg",
+                      "createdAt": "2026-03-28T13:10:44.011Z",
+                      "updatedAt": "2026-03-28T13:10:44.011Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{id}": {
+      "get": {
+        "summary": "Get a single task",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task found"
+          },
+          "404": {
+            "description": "Task not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a task",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/TaskRequest" },
+              "example": {
+                "status": "DONE"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Task updated"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a task",
+        "security": [{ "bearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task deleted",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "message": "Task deleted successfully.",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "summary": "List users for admins",
+        "security": [{ "bearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Users returned",
+            "content": {
+              "application/json": {
+                "example": {
+                  "success": true,
+                  "data": {
+                    "users": [
+                      {
+                        "id": "cmnachmtk0000sfm7tt4o6jdg",
+                        "name": "Platform Admin",
+                        "email": "admin@primetrade.local",
+                        "role": "ADMIN",
+                        "createdAt": "2026-03-28T13:07:23.720Z",
+                        "taskCount": 1
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Admin role required"
+          }
+        }
+      }
+    }
+  }
+}

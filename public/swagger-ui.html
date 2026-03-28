@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Swagger UI</title>
+    <link rel="stylesheet" href="/swagger/swagger-ui.css" />
+    <style>
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: #f8fafc;
+      }
+
+      body {
+        font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+      }
+
+      #swagger-ui {
+        box-sizing: border-box;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .swagger-ui .topbar {
+        display: none;
+      }
+
+      .swagger-ui .scheme-container {
+        box-shadow: none;
+        padding: 16px 0;
+      }
+
+      .swagger-ui .opblock,
+      .swagger-ui .information-container,
+      .swagger-ui .scheme-container {
+        border-radius: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="/swagger/swagger-ui-bundle.js"></script>
+    <script>
+      window.onload = function () {
+        window.SwaggerUIBundle({
+          url: "/api-spec.json",
+          dom_id: "#swagger-ui",
+          deepLinking: true,
+          defaultModelsExpandDepth: 1,
+          docExpansion: "list",
+          displayRequestDuration: true
+        });
+      };
+    </script>
+  </body>
+</html>
