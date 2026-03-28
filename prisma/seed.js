@@ -20,6 +20,8 @@ async function main() {
       role: Role.ADMIN,
     },
   });
+
+  console.log("Seeded admin user: admin@primetrade.local / Admin@123");
 }
 
 main()

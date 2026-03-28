@@ -5,23 +5,30 @@ import { prisma } from "@/lib/prisma";
 export const GET = withErrorHandling(async function GET(request) {
   await requireRole(request, "ADMIN");
 
-  const users = await prisma.user.findMany({
-    orderBy: {
-      createdAt: "asc",
-    },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      createdAt: true,
-      _count: {
-        select: {
-          tasks: true,
-        },
+  const [users, tasks] = await Promise.all([
+    prisma.user.findMany({
+      orderBy: {
+        createdAt: "asc",
       },
-    },
-  });
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+    }),
+    prisma.task.findMany({
+      select: {
+        ownerId: true,
+      },
+    }),
+  ]);
+
+  const taskCounts = tasks.reduce((counts, task) => {
+    counts[task.ownerId] = (counts[task.ownerId] || 0) + 1;
+    return counts;
+  }, {});
 
   return successResponse({
     data: {
@@ -31,7 +38,7 @@ export const GET = withErrorHandling(async function GET(request) {
         email: user.email,
         role: user.role,
         createdAt: user.createdAt,
-        taskCount: user._count.tasks,
+        taskCount: taskCounts[user.id] || 0,
       })),
     },
   });

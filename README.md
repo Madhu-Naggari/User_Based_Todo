@@ -1,20 +1,18 @@
 # Role-Based Task API
 
-Full-stack assignment built in Next.js with JWT authentication, role-based access control, versioned REST APIs, task CRUD, Swagger UI documentation, and a simple dashboard UI.
+Full-stack assignment built in Next.js with JWT authentication, role-based access control, versioned REST APIs, task CRUD, Prisma + MongoDB, Swagger UI documentation, and a simple dashboard UI.
 
 ## Tech Stack
 
 - Next.js 16 App Router
 - React 19
 - Prisma ORM
-- SQLite for local reviewer-friendly setup
+- MongoDB
 - bcryptjs for password hashing
 - jsonwebtoken for JWT authentication
 - Zod for validation
 - Sonner for toast notifications
 - Swagger UI for API documentation
-
-Note: the schema is relational and can be moved to PostgreSQL/MySQL easily via Prisma. SQLite is used here so the reviewer can run the assignment with minimal setup.
 
 ## Setup Instructions
 
@@ -30,25 +28,27 @@ npm install
 cp .env.example .env
 ```
 
-3. Create the database schema:
+3. Set `DATABASE_URL` in `.env` to your MongoDB connection string.
+
+4. Push the Prisma schema:
 
 ```bash
 npm run db:push
 ```
 
-4. Seed the admin account:
+5. Seed the admin account:
 
 ```bash
 npm run db:seed
 ```
 
-5. Start the application:
+6. Start the application:
 
 ```bash
 npm run dev
 ```
 
-6. Open `http://localhost:3000`
+7. Open `http://localhost:3000`
 
 ## Seeded Admin Account
 
@@ -135,5 +135,5 @@ npm run dev
 
 - APIs are grouped under `/api/v1`, making future versions easy to add without breaking clients.
 - JWT auth keeps app servers stateless, which helps horizontal scaling.
-- Prisma models already define indexed relational lookups for ownership and status.
-- For production, I would move the datasource to PostgreSQL, add Redis for caching/rate limiting, and introduce structured logging plus background jobs for heavier workflows.
+- Prisma models define indexed ownership and status lookups on MongoDB documents.
+- For production, I would use MongoDB Atlas, add Redis for caching/rate limiting, and introduce structured logging plus background jobs for heavier workflows.
